@@ -302,14 +302,21 @@ def main():
     if has_aiw:
         shutil.copy2(aiw, os.path.join(lay_dir, layout + ".AIW"))
 
+    import gmt_dedup
     wanted = {r["gmt"].lower() for r in exported}
     n_gmt = 0
+    old_verts = new_verts = old_bytes = new_bytes = 0
     for f in os.listdir(gmt_dir):
         if not f.lower().endswith(".gmt"):
             continue
         if args.minimal and f.lower() not in wanted:
             continue
-        shutil.copy2(os.path.join(gmt_dir, f), gmts)
+        ov, nv, ob, nb = gmt_dedup.dedup_file(
+            os.path.join(gmt_dir, f), os.path.join(gmts, f))
+        old_verts += ov
+        new_verts += nv
+        old_bytes += ob
+        new_bytes += nb
         n_gmt += 1
 
     n_tex = 0
@@ -333,7 +340,8 @@ def main():
 
     print("staged %s" % stage)
     print("  instances   %d  (%d collidable)" % (len(exported), phys))
-    print("  gmt files   %d" % n_gmt)
+    print("  gmt files   %d  (%.1f -> %.1f MB, %d -> %d verts)"
+          % (n_gmt, old_bytes / 1048576.0, new_bytes / 1048576.0, old_verts, new_verts))
     print("  textures    %d" % n_tex)
     print("  waypoints   %s" % ("yes" if has_aiw else "MISSING"))
 
