@@ -8,6 +8,49 @@ Format (version 5-6):
 """
 import struct, sys, os, math
 
+
+def _texture_table_fits(data, p):
+    if p + 4 > len(data):
+        return False
+    count = struct.unpack_from('<I', data, p)[0]
+    p += 4
+    if count > (len(data) - p) // 12:
+        return False
+    for _ in range(count):
+        if p + 8 > len(data):
+            return False
+        p += 4
+        name_len = struct.unpack_from('<I', data, p)[0]
+        p += 4
+        if name_len > len(data) - p:
+            return False
+        p += name_len
+        if p + 4 > len(data):
+            return False
+        size = struct.unpack_from('<I', data, p)[0]
+        p += 4
+        if size > len(data) - p:
+            return False
+        p += size
+    return True
+
+
+def texture_table_offset(data):
+    if data[:6] != b'sc6969':
+        raise ValueError('not a kn5 file, signature was %r' % data[:6])
+    version = struct.unpack_from('<I', data, 6)[0]
+    if version <= 5:
+        return 10
+
+    if len(data) < 14:
+        raise ValueError('truncated KN5 version %d header' % version)
+    extra = struct.unpack_from('<I', data, 10)[0]
+    for p in (14 + extra, 14):
+        if _texture_table_fits(data, p):
+            return p
+    raise ValueError('unrecognized KN5 version %d texture header' % version)
+
+
 class Reader:
     def __init__(self, data):
         self.d = data
@@ -193,10 +236,7 @@ class KN5:
             raise ValueError('not a kn5 file, signature was %r' % sig)
         r.skip(6)
         self.version = r.u32()
-        if self.version > 5:
-            extra = r.u32()
-            if extra:
-                r.skip(extra)
+        r.p = texture_table_offset(data)
         self.textures = []
         for _ in range(r.u32()):
             ttype = r.u32()
