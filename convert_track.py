@@ -17,7 +17,7 @@ import steam_paths
 import struct
 from collections import OrderedDict, defaultdict
 
-from kn5 import KN5
+from kn5 import KN5, texture_table_offset
 
 # AC surface key -> rF2 TDF material prefix. The rF2 terrain definition matches
 # the FIRST PART of a material name, so the prefix is what selects the surface.
@@ -72,11 +72,7 @@ def texture_alpha_stats(kn5_paths):
             continue
         with open(path, "rb") as f:
             d = f.read()
-        p = 6
-        ver = struct.unpack_from("<I", d, p)[0]
-        p += 4
-        if ver > 5:
-            p += 4 + struct.unpack_from("<I", d, p)[0]
+        p = texture_table_offset(d)
         count = struct.unpack_from("<I", d, p)[0]
         p += 4
         for _ in range(count):
@@ -997,12 +993,7 @@ def extract_textures(kn5_paths, tex_dir, names):
             continue
         with open(path, "rb") as f:
             d = f.read()
-        p = 6
-        ver = struct.unpack_from("<I", d, p)[0]
-        p += 4
-        if ver > 5:
-            extra = struct.unpack_from("<I", d, p)[0]
-            p += 4 + extra
+        p = texture_table_offset(d)
         cnt = struct.unpack_from("<I", d, p)[0]
         p += 4
         for _ in range(cnt):

@@ -1111,3 +1111,27 @@ cameras 0.5 min, Blender 9 min (70%), finalize 1 s.
   in for a texture a build failed to make, so verify_install would not see
   it missing. Step 1 now starts the folder from empty (tested: a planted
   file is gone, 82 textures left).
+
+## 2026-11-18: Simtraxx Brasov return path
+- This layout's `fast_lane.ai` has an open 12,387.8 m line and endpoints
+  6,174.8 m apart. The generated AIW closed it with a straight chord. The
+  local AIW was changed to follow its 2,065 sampled waypoints out and the same
+  waypoints back, keeping the 6.0 m spacing; the resulting lap is 24,767.2 m.
+
+## 2026-11-19: version-6 KN5 texture table
+- In `ks_nordschleife`'s `models_endurance.ini`, the first model is `25.kn5`
+  (28,028,795 bytes). Its signature is `sc6969`, version is 6, and the dword
+  at offset 10 is 673,425. The texture count is at offset 14 and is 1; its
+  first record is type 1, `physics.dds`, with a 1,504-byte DDS payload.
+- Treating the dword as a byte count skipped to offset 673,439, where the
+  parser read a texture count of 3,306,012,003 and later tried to unpack at
+  offset 1,141,976,362. `19.kn5`, `26.kn5`, `ks_nordschleife.kn5` and
+  `18.kn5` also parse with the texture table at offset 14. The endurance build
+  completed after both KN5 texture scans and the KN5 reader used a
+  bounds-validated header candidate.
+- The staged build has 4,046 GMTs and 449 textures. `verify_install.py` still
+  reports 42 alpha checks: 41 fence rows are marked `alpha_test=False` and
+  `needs_blend=True` but are classified as cut-outs from the texture map; one
+  exported alpha-tested fence shares `fence2_tile` with those blended rows and
+  gets the plain shader selected from the first row. This is separate from the
+  header fix and remains an unverified material-variant issue.

@@ -22,7 +22,7 @@ import subprocess
 from parallel import default_jobs
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BLENDER = r"C:\Program Files\Blender Foundation\Blender 3.6\blender.exe"
+BLENDER = r"D:\Apps\Blender\blender.exe"
 
 
 def step(n, title):

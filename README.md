@@ -145,6 +145,17 @@ Git ignores `out\`, so none of it is ever uploaded.
 python build_track.py "<AC track folder or .zip>" --install auto
 ```
 
+To convert several tracks in sequence, create a text file with one
+`<track path>;<layout name>` entry per line, then run:
+
+```
+python convert_multiple_tracks.py tracks.txt
+```
+
+Leave the layout empty after the semicolon to use the track's default layout.
+The script continues after a failed conversion and returns a non-zero exit code
+if any entry failed.
+
 Useful options:
 
 | Option | What it does |
